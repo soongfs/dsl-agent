@@ -1,5 +1,8 @@
+from dsl_agent.cli import run_cli
+
+
 def main():
-    print("Hello from dsl-agent!")
+    run_cli()
 
 
 if __name__ == "__main__":
