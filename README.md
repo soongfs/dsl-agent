@@ -22,6 +22,12 @@ python3 main.py tests/data/demo_bot.dsl --use-stub
 - CLI 参数：`--script PATH`（位置参数）、`--config PATH`、`--use-stub/--no-stub`、`--show-intent`、`--api-base`、`--api-key`、`--model`
 - 配置文件（可选 INI）示例：参考 `config.example.ini`
 
+### 接入 LLM（通义千问/百炼 OpenAI 兼容接口）
+
+- 在配置文件写入 `api_base`、`api_key`、`model`（示例已在 `config.example.ini`）。
+- 运行时关闭桩：`python3 main.py your.dsl --no-stub --config config.example.ini`
+- 识别失败或参数缺失时会回退桩服务并在日志中提示。
+
 ## 测试
 
 ```bash
