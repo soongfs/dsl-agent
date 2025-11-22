@@ -47,3 +47,53 @@ def test_uppercase_identifier_fails(tmp_path: pathlib.Path):
     )
     with pytest.raises(parser.ParseError):
         parser.parse_script(bad_script)
+
+
+def test_multiple_defaults_fail(tmp_path: pathlib.Path):
+    bad_script = tmp_path / "bad4.dsl"
+    bad_script.write_text(
+        'scenario x { state start { default -> "a" -> end; default -> "b" -> end; } }',
+        encoding="utf-8",
+    )
+    with pytest.raises(parser.ParseError):
+        parser.parse_script(bad_script)
+
+
+def test_duplicate_state_names_fail(tmp_path: pathlib.Path):
+    bad_script = tmp_path / "bad5.dsl"
+    bad_script.write_text(
+        'scenario x { state start { default -> "a" -> end; } state start { default -> "b" -> end; } }',
+        encoding="utf-8",
+    )
+    with pytest.raises(parser.ParseError):
+        parser.parse_script(bad_script)
+
+
+def test_initial_refs_missing_state_fail(tmp_path: pathlib.Path):
+    bad_script = tmp_path / "bad6.dsl"
+    bad_script.write_text(
+        'scenario x { initial nowhere; state start { default -> "a" -> end; } }',
+        encoding="utf-8",
+    )
+    with pytest.raises(parser.ParseError):
+        parser.parse_script(bad_script)
+
+
+def test_implicit_initial_is_first_state(tmp_path: pathlib.Path):
+    script = tmp_path / "good.dsl"
+    script.write_text(
+        'scenario x { state first { default -> "a" -> end; } state second { default -> "b" -> end; } }',
+        encoding="utf-8",
+    )
+    scenario = parser.parse_script(script)
+    assert scenario.initial_state == "first"
+
+
+def test_missing_semicolon_fails(tmp_path: pathlib.Path):
+    bad_script = tmp_path / "bad7.dsl"
+    bad_script.write_text(
+        'scenario x { state start { default -> "a" -> end } }',  # missing semicolon
+        encoding="utf-8",
+    )
+    with pytest.raises(parser.ParseError):
+        parser.parse_script(bad_script)
