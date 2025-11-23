@@ -5,6 +5,8 @@ import configparser
 import logging
 import os
 import pathlib
+import select
+import sys
 from typing import Any, Dict, Optional
 
 from . import interpreter
@@ -65,6 +67,7 @@ def _resolve_settings(args: argparse.Namespace, cfg: Dict[str, Any]) -> Dict[str
         "intent_descriptions": cfg.get("intent_descriptions", {}),
         "welcome_messages": cfg.get("welcome_messages", {}),
         "log_file": cfg.get("log_file"),
+        "idle_timeout": cfg.get("idle_timeout"),
     }
 
     if args.api_base:
@@ -79,6 +82,8 @@ def _resolve_settings(args: argparse.Namespace, cfg: Dict[str, Any]) -> Dict[str
         settings["show_intent"] = args.show_intent
     if args.log_file:
         settings["log_file"] = args.log_file
+    if args.idle_timeout is not None:
+        settings["idle_timeout"] = args.idle_timeout
 
     # environment overrides everything
     settings["api_base"] = os.getenv("DSL_API_BASE", settings.get("api_base"))
@@ -90,9 +95,22 @@ def _resolve_settings(args: argparse.Namespace, cfg: Dict[str, Any]) -> Dict[str
     env_show_intent = os.getenv("DSL_SHOW_INTENT")
     if env_show_intent is not None:
         settings["show_intent"] = _str_to_bool(env_show_intent, False)
+    env_idle = os.getenv("DSL_IDLE_TIMEOUT")
+    if env_idle is not None:
+        try:
+            settings["idle_timeout"] = float(env_idle)
+        except ValueError:
+            logging.warning("Invalid DSL_IDLE_TIMEOUT value: %s", env_idle)
 
     settings["use_stub"] = _str_to_bool(str(settings.get("use_stub")) if settings.get("use_stub") is not None else None, False)
     settings["show_intent"] = _str_to_bool(str(settings.get("show_intent")) if settings.get("show_intent") is not None else None, False)
+    # idle timeout: None or float seconds; <=0 disables
+    try:
+        if settings.get("idle_timeout") is not None:
+            settings["idle_timeout"] = float(settings["idle_timeout"])
+    except ValueError:
+        logging.warning("Invalid idle_timeout config; disabling.")
+        settings["idle_timeout"] = None
 
     return settings
 
@@ -129,6 +147,11 @@ def run_cli() -> None:
     parser.add_argument("--api-key", help="LLM API key")
     parser.add_argument("--model", help="LLM model name")
     parser.add_argument("--log-file", dest="log_file", help="Write logs to file (console will show warnings only)")
+    parser.add_argument(
+        "--idle-timeout",
+        type=float,
+        help="Seconds to wait for user input before auto-triggering default (<=0 disables)",
+    )
     parser.set_defaults(use_stub=None, show_intent=None)
     args = parser.parse_args()
 
@@ -171,14 +194,39 @@ def run_cli() -> None:
         print(welcome)
     else:
         print(f"欢迎使用 {dsl_scenario.name}，请输入问题（输入 exit/quit 退出）。")
+    idle_timeout = settings.get("idle_timeout")
+
+    def read_input_with_timeout(prompt: str) -> Optional[str]:
+        """Read a line with optional timeout. Return None on EOF."""
+        if idle_timeout is None or idle_timeout <= 0:
+            try:
+                return input(prompt)
+            except EOFError:
+                return None
+        # use select to wait for stdin
+        print(prompt, end="", flush=True)
+        rlist, _, _ = select.select([sys.stdin], [], [], idle_timeout)
+        if not rlist:
+            return ""  # timeout -> empty string to trigger default
+        line = sys.stdin.readline()
+        if not line:
+            return None
+        return line.rstrip("\n")
+
     while True:
         try:
-            user_text = input("> ")
-        except EOFError:
+            user_text = read_input_with_timeout("> ")
+        except KeyboardInterrupt:
+            print()
+            break
+        if user_text is None:
             print()
             break
         if user_text.strip().lower() in {"exit", "quit"}:
             break
+        if user_text == "" and idle_timeout and idle_timeout > 0:
+            # timeout path, log for debugging
+            logging.info("Idle timeout %.2fs reached, triggering default flow", idle_timeout)
         reply = bot.process_input(user_text)
         print(reply)
         if settings["show_intent"]:

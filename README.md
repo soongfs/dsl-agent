@@ -42,6 +42,7 @@ python3 -m pytest
 - 可选欢迎语：在配置添加 `[welcome.<scenario>]` 段，例如 `message = "您好，这里是退款助手..."`，启动后将自动提示。
 - 日志：默认写入 `logs/<场景名>.log`，控制台仅显示警告级别；可用 `--log-file bot.log` 自定义路径。
 - 安全提示：`config.ini` 已被 `.gitignore` 忽略，请勿提交真实 API Key，使用 `config.example.ini` 作为模板。
+- 空闲超时：`--idle-timeout` 或配置 `idle_timeout`（秒），在用户无输入时自动触发默认流程（<=0 表示关闭）。
 
 ### 接入 LLM（通义千问/百炼 OpenAI 兼容接口）
 
