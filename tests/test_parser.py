@@ -35,6 +35,20 @@ def test_parse_support_script():
     assert "confirm" in scenario.states
 
 
+def test_parse_faq_script():
+    scenario = parser.parse_script(load_data("faq_bot.dsl"))
+    assert scenario.name == "faq_bot"
+    assert scenario.initial_state == "start"
+    assert "faq" in scenario.states
+
+
+def test_parse_appointment_script():
+    scenario = parser.parse_script(load_data("appointment_bot.dsl"))
+    assert scenario.name == "appointment_bot"
+    assert scenario.initial_state == "start"
+    assert "service" in scenario.states
+
+
 def test_missing_default_fails(tmp_path: pathlib.Path):
     bad_script = tmp_path / "bad.dsl"
     bad_script.write_text(

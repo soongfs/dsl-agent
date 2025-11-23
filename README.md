@@ -14,6 +14,8 @@ python3 main.py tests/data/travel_bot.dsl --config config.example.ini
 # 其他示例
 python3 main.py tests/data/refund_bot.dsl --config config.example.ini
 python3 main.py tests/data/support_bot.dsl --use-stub
+python3 main.py tests/data/faq_bot.dsl --use-stub
+python3 main.py tests/data/appointment_bot.dsl --use-stub
 
 # 运行测试
 python3 -m pytest
@@ -26,6 +28,8 @@ python3 -m pytest
 - `travel_bot.dsl`：订单查询 + 机票预订
 - `refund_bot.dsl`：退款流程
 - `support_bot.dsl`：基础技术支持分诊
+- `faq_bot.dsl`：常见问题（配送、退款政策、营业时间）
+- `appointment_bot.dsl`：预约助手（医生/理发/维修）
 
 ## 配置
 

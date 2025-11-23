@@ -69,3 +69,31 @@ def test_support_bot_golden():
         "confirm": {"未解决": "reject"},
     }
     run_golden("support_bot.dsl", steps, mapping)
+
+
+def test_faq_bot_golden():
+    steps = [
+        ("你好", "常见问题助手", "faq", False),
+        ("配送", "标准配送", "faq", True),
+    ]
+    mapping = {
+        "start": {"你好": "greeting"},
+        "faq": {"配送": "shipping"},
+    }
+    run_golden("faq_bot.dsl", steps, mapping)
+
+
+def test_appointment_bot_golden():
+    steps = [
+        ("你好", "预约助手", "service", False),
+        ("医生", "预约医生", "date", False),
+        ("2024-12-01", "收到日期", "confirm", False),
+        ("确认", "已提交预约", "confirm", True),
+    ]
+    mapping = {
+        "start": {"你好": "greeting"},
+        "service": {"医生": "doctor"},
+        "date": {"2024-12-01": "provide_date"},
+        "confirm": {"确认": "confirm"},
+    }
+    run_golden("appointment_bot.dsl", steps, mapping)

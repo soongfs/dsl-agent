@@ -41,7 +41,7 @@
 
 目的：确保脚本对话转录稳定。用桩的意图序列强制确定性。
 
-- **示例脚本**：使用 `DSL_SPEC.md` 的标准示例（如 `demo_bot`），可按需补充。
+- **示例脚本**：使用已提供的示例（如 `travel_bot`、`refund_bot`、`support_bot`、`faq_bot`、`appointment_bot`），可按需补充。
 - **方法**：预设列表 `(user_input, expected_intent, expected_reply, expected_state_after, ended_flag)`；驱动解释器并逐步断言。
 - **输出**：期望转录存为 fixture（golden 文件），比较实际回复/状态，变更需显式更新并评审。
 - **负向路径**：包含桩返回未知意图的步骤，确认走 default 分支。
