@@ -4,6 +4,7 @@ import argparse
 import configparser
 import logging
 import os
+import pathlib
 from typing import Any, Dict, Optional
 
 from . import interpreter
@@ -27,6 +28,15 @@ def _load_config(path: Optional[str]) -> Dict[str, Any]:
         data.update(config["llm"])
     if "settings" in config:
         data.update(config["settings"])
+    # intent_descriptions sections: [intent_descriptions.<scenario>]
+    descriptions: Dict[str, Dict[str, str]] = {}
+    prefix = "intent_descriptions."
+    for section in config.sections():
+        if section.startswith(prefix):
+            scenario_name = section[len(prefix) :]
+            descriptions[scenario_name] = dict(config[section])
+    if descriptions:
+        data["intent_descriptions"] = descriptions
     return data
 
 
@@ -38,6 +48,7 @@ def _resolve_settings(args: argparse.Namespace, cfg: Dict[str, Any]) -> Dict[str
         "model": cfg.get("model"),
         "use_stub": cfg.get("use_stub"),
         "show_intent": cfg.get("show_intent"),
+        "intent_descriptions": cfg.get("intent_descriptions", {}),
     }
 
     if args.api_base:
@@ -68,7 +79,7 @@ def _resolve_settings(args: argparse.Namespace, cfg: Dict[str, Any]) -> Dict[str
     return settings
 
 
-def _build_intent_service(settings: Dict[str, Any]) -> IntentService:
+def _build_intent_service(settings: Dict[str, Any], scenario_name: str) -> IntentService:
     if settings["use_stub"]:
         return StubIntentService()
     api_base = settings.get("api_base") or ""
@@ -77,7 +88,14 @@ def _build_intent_service(settings: Dict[str, Any]) -> IntentService:
     if not (api_base and api_key and model):
         logging.warning("LLM settings incomplete; falling back to stub intent service")
         return StubIntentService()
-    return LLMIntentService(api_base=api_base, api_key=api_key, model=model)
+    desc_all = settings.get("intent_descriptions") or {}
+    intent_descriptions = desc_all.get(scenario_name, {})
+    return LLMIntentService(
+        api_base=api_base,
+        api_key=api_key,
+        model=model,
+        intent_descriptions=intent_descriptions,
+    )
 
 
 def run_cli() -> None:
@@ -102,7 +120,7 @@ def run_cli() -> None:
     )
 
     dsl_scenario = dsl_parser.parse_script(args.script)
-    intent_service = _build_intent_service(settings)
+    intent_service = _build_intent_service(settings, scenario_name=dsl_scenario.name)
     bot = interpreter.Interpreter(dsl_scenario, intent_service)
 
     print(f"[{dsl_scenario.name}] ready. Type 'exit' to quit.")

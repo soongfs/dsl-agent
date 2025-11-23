@@ -25,6 +25,7 @@ python3 main.py tests/data/demo_bot.dsl --use-stub
 ### 接入 LLM（通义千问/百炼 OpenAI 兼容接口）
 
 - 在配置文件写入 `api_base`、`api_key`、`model`（示例已在 `config.example.ini`）。
+- 若需为特定场景提供意图描述，使用小节 `[intent_descriptions.<scenario_name>]`，如 `demo_bot` 场景下定义 `provide_order = "订单号，通常数字或数字-数字"`，提示会传给模型以提升分类准确度。
 - 运行时关闭桩：`python3 main.py your.dsl --no-stub --config config.example.ini`
 - 识别失败或参数缺失时会回退桩服务并在日志中提示。
 
