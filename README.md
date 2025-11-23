@@ -10,11 +10,19 @@ pip install -e .[dev]
 
 # 运行示例脚本（默认尝试 LLM，缺配置则回退桩）
 python3 main.py tests/data/demo_bot.dsl --config config.example.ini
+
+# 其他示例
+python3 main.py tests/data/refund_bot.dsl --config config.example.ini
+python3 main.py tests/data/support_bot.dsl --use-stub
+
+# 运行测试
+python3 -m pytest
 ```
 
 退出命令：在 REPL 输入 `exit` 或 `quit`。
 
 示例脚本（位于 `tests/data/`）：
+
 - `demo_bot.dsl`：订单查询 + 机票预订
 - `refund_bot.dsl`：退款流程
 - `support_bot.dsl`：基础技术支持分诊
@@ -28,6 +36,8 @@ python3 main.py tests/data/demo_bot.dsl --config config.example.ini
 - 配置文件（可选 INI）示例：参考 `config.example.ini`
 - 注意：配置文件中的 `use_stub=true` 会强制走桩，即便提供了 LLM 配置。若要优先 LLM，请设为 `false` 或使用 `--no-stub`。
 - 可选欢迎语：在配置添加 `[welcome.<scenario>]` 段，例如 `message = "您好，这里是退款助手..."`，启动后将自动提示。
+- 日志：默认写入 `logs/<场景名>.log`，控制台仅显示警告级别；可用 `--log-file bot.log` 自定义路径。
+- 安全提示：`config.ini` 已被 `.gitignore` 忽略，请勿提交真实 API Key，使用 `config.example.ini` 作为模板。
 
 ### 接入 LLM（通义千问/百炼 OpenAI 兼容接口）
 
