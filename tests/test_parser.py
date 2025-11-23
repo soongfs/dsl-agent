@@ -16,7 +16,7 @@ def test_parse_valid_demo_script():
     assert scenario.name == "demo_bot"
     assert scenario.initial_state == "start"
     assert "routing" in scenario.states
-    assert scenario.states["order"].default.response.startswith("Please give an order number")
+    assert scenario.states["order"].default.response.startswith("请提供订单号")
 
 
 def test_missing_default_fails(tmp_path: pathlib.Path):

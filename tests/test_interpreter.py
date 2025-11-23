@@ -24,12 +24,12 @@ def test_happy_path_and_end():
     bot = Interpreter(scenario, stub)
 
     reply1 = bot.process_input("hi")
-    assert "Hello!" in reply1
+    assert "您好" in reply1
     assert bot.current_state == "routing"
     assert not bot.ended
 
     reply2 = bot.process_input("order")
-    assert "order number" in reply2
+    assert "订单号" in reply2
     assert bot.current_state == "order"
 
     reply3 = bot.process_input("123")
@@ -46,7 +46,7 @@ def test_default_and_loop():
     bot = Interpreter(scenario, stub)
 
     reply = bot.process_input("???")
-    assert "Sorry" in reply  # default in start
+    assert "抱歉" in reply  # default in start
     assert bot.current_state == "start"
     assert bot.ended is False
 
