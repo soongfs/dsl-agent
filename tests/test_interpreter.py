@@ -13,7 +13,7 @@ def load_scenario(name: str):
 
 
 def test_happy_path_and_end():
-    scenario = load_scenario("demo_bot.dsl")
+    scenario = load_scenario("travel_bot.dsl")
     stub = StubIntentService(
         mapping={
             "start": {"hi": "greeting"},
@@ -41,7 +41,7 @@ def test_happy_path_and_end():
 
 
 def test_default_and_loop():
-    scenario = load_scenario("demo_bot.dsl")
+    scenario = load_scenario("travel_bot.dsl")
     stub = StubIntentService(mapping={})
     bot = Interpreter(scenario, stub)
 
@@ -52,7 +52,7 @@ def test_default_and_loop():
 
 
 def test_reset():
-    scenario = load_scenario("demo_bot.dsl")
+    scenario = load_scenario("travel_bot.dsl")
     stub = StubIntentService(mapping={"start": {"hi": "greeting"}})
     bot = Interpreter(scenario, stub)
 

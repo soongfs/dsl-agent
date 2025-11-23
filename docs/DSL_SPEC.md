@@ -45,7 +45,7 @@ String       ::= '"' ( '\' '"' | . )* '"'   // supports \" escape
 ### 最小脚本模板
 
 ```plaintext
-scenario demo_bot {
+scenario travel_bot {
     initial start;
 
     state start {

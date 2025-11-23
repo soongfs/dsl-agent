@@ -1,4 +1,4 @@
-scenario demo_bot {
+scenario travel_bot {
     initial start;
 
     state start {

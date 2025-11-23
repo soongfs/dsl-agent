@@ -38,7 +38,7 @@ def test_demo_bot_golden():
         "routing": {"order": "ask_order"},
         "order": {"2024-001": "provide_order"},
     }
-    run_golden("demo_bot.dsl", steps, mapping)
+    run_golden("travel_bot.dsl", steps, mapping)
 
 
 def test_refund_bot_golden():

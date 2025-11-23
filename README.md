@@ -9,7 +9,7 @@
 pip install -e .[dev]
 
 # 运行示例脚本（默认尝试 LLM，缺配置则回退桩）
-python3 main.py tests/data/demo_bot.dsl --config config.example.ini
+python3 main.py tests/data/travel_bot.dsl --config config.example.ini
 
 # 其他示例
 python3 main.py tests/data/refund_bot.dsl --config config.example.ini
@@ -23,7 +23,7 @@ python3 -m pytest
 
 示例脚本（位于 `tests/data/`）：
 
-- `demo_bot.dsl`：订单查询 + 机票预订
+- `travel_bot.dsl`：订单查询 + 机票预订
 - `refund_bot.dsl`：退款流程
 - `support_bot.dsl`：基础技术支持分诊
 

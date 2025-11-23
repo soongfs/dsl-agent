@@ -10,10 +10,10 @@ def load_data(name: str) -> pathlib.Path:
     return pathlib.Path(__file__).parent / "data" / name
 
 
-def test_parse_valid_demo_script():
-    scenario = parser.parse_script(load_data("demo_bot.dsl"))
+def test_parse_valid_travel_script():
+    scenario = parser.parse_script(load_data("travel_bot.dsl"))
     assert isinstance(scenario, Scenario)
-    assert scenario.name == "demo_bot"
+    assert scenario.name == "travel_bot"
     assert scenario.initial_state == "start"
     assert "routing" in scenario.states
     assert scenario.states["order"].default.response.startswith("请提供订单号")
