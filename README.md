@@ -14,6 +14,11 @@ python3 main.py tests/data/demo_bot.dsl --use-stub
 
 退出命令：在 REPL 输入 `exit` 或 `quit`。
 
+示例脚本（位于 `tests/data/`）：
+- `demo_bot.dsl`：订单查询 + 机票预订
+- `refund_bot.dsl`：退款流程
+- `support_bot.dsl`：基础技术支持分诊
+
 ## 配置
 
 优先级：环境变量 > CLI 参数 > 配置文件（示例见 `config.example.ini`）。

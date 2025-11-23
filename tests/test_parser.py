@@ -19,6 +19,22 @@ def test_parse_valid_demo_script():
     assert scenario.states["order"].default.response.startswith("请提供订单号")
 
 
+def test_parse_refund_script():
+    scenario = parser.parse_script(load_data("refund_bot.dsl"))
+    assert scenario.name == "refund_bot"
+    assert scenario.initial_state == "start"
+    assert "wait_order" in scenario.states
+    assert scenario.states["wait_reason"].default.response.startswith("请简要说明")
+
+
+def test_parse_support_script():
+    scenario = parser.parse_script(load_data("support_bot.dsl"))
+    assert scenario.name == "support_bot"
+    assert scenario.initial_state == "start"
+    assert "triage" in scenario.states
+    assert "confirm" in scenario.states
+
+
 def test_missing_default_fails(tmp_path: pathlib.Path):
     bad_script = tmp_path / "bad.dsl"
     bad_script.write_text(
