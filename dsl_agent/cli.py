@@ -37,6 +37,20 @@ def _load_config(path: Optional[str]) -> Dict[str, Any]:
             descriptions[scenario_name] = dict(config[section])
     if descriptions:
         data["intent_descriptions"] = descriptions
+
+    # welcome message per scenario: [welcome.<scenario>]
+    welcomes: Dict[str, str] = {}
+    welcome_prefix = "welcome."
+    for section in config.sections():
+        if section.startswith(welcome_prefix):
+            scenario_name = section[len(welcome_prefix) :]
+            # take first key/value as the message; or empty section -> skip
+            if config[section]:
+                # pick the first item
+                first_key = next(iter(config[section]))
+                welcomes[scenario_name] = config[section][first_key]
+    if welcomes:
+        data["welcome_messages"] = welcomes
     return data
 
 
@@ -49,6 +63,7 @@ def _resolve_settings(args: argparse.Namespace, cfg: Dict[str, Any]) -> Dict[str
         "use_stub": cfg.get("use_stub"),
         "show_intent": cfg.get("show_intent"),
         "intent_descriptions": cfg.get("intent_descriptions", {}),
+        "welcome_messages": cfg.get("welcome_messages", {}),
         "log_file": cfg.get("log_file"),
     }
 
@@ -150,6 +165,12 @@ def run_cli() -> None:
         print(f"[{dsl_scenario.name}] ready. Logs -> {settings['log_file']}. Type 'exit' to quit.")
     else:
         print(f"[{dsl_scenario.name}] ready. Type 'exit' to quit.")
+
+    welcome = settings.get("welcome_messages", {}).get(dsl_scenario.name)
+    if welcome:
+        print(welcome)
+    else:
+        print(f"欢迎使用 {dsl_scenario.name}，请输入问题（输入 exit/quit 退出）。")
     while True:
         try:
             user_text = input("> ")
