@@ -1,2 +1,4 @@
 config.ini
 logs/
+dsl_agent/__pycache__/
+tests/__pycache__/
