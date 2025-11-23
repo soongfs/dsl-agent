@@ -14,12 +14,14 @@ scenario refund_bot {
     }
 
     state wait_reason {
-        intent provide_reason -> "已记录原因：{user_input}。为您提交退款申请，请稍候..." -> goto done;
+        intent provide_reason -> "已记录原因：{user_input}。请确认是否提交退款申请？" -> goto confirm;
         intent cancel -> "已取消退款流程，如需帮助请再告知。" -> end;
         default -> "请简要说明退款原因，或输入取消。" -> goto wait_reason;
     }
 
-    state done {
-        default -> "退款申请已提交，您会收到后续通知。还有其他需要吗？" -> end;
+    state confirm {
+        intent confirm -> "退款申请已提交，您会收到后续通知。" -> end;
+        intent reject -> "已取消退款申请，如需帮助请再告知。" -> end;
+        default -> "请回复确认或取消退款。" -> goto confirm;
     }
 }

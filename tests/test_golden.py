@@ -45,14 +45,14 @@ def test_refund_bot_golden():
     steps = [
         ("你好", "退款助手", "wait_order", False),
         ("2024-001", "已收到订单号", "wait_reason", False),
-        ("质量问题", "已记录原因", "done", False),
-        ("", "退款申请已提交", "done", True),
+        ("质量问题", "已记录原因", "confirm", False),
+        ("确认", "退款申请已提交", "confirm", True),
     ]
     mapping = {
         "start": {"你好": "greeting"},
         "wait_order": {"2024-001": "provide_order"},
         "wait_reason": {"质量问题": "provide_reason"},
-        "done": {"": "default"},
+        "confirm": {"确认": "confirm"},
     }
     run_golden("refund_bot.dsl", steps, mapping)
 
