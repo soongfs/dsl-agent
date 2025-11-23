@@ -71,12 +71,12 @@ def _resolve_settings(args: argparse.Namespace, cfg: Dict[str, Any]) -> Dict[str
     settings["model"] = os.getenv("DSL_MODEL", settings.get("model"))
     env_use_stub = os.getenv("DSL_USE_STUB")
     if env_use_stub is not None:
-        settings["use_stub"] = _str_to_bool(env_use_stub, True)
+        settings["use_stub"] = _str_to_bool(env_use_stub, False)
     env_show_intent = os.getenv("DSL_SHOW_INTENT")
     if env_show_intent is not None:
         settings["show_intent"] = _str_to_bool(env_show_intent, False)
 
-    settings["use_stub"] = _str_to_bool(str(settings.get("use_stub")) if settings.get("use_stub") is not None else None, True)
+    settings["use_stub"] = _str_to_bool(str(settings.get("use_stub")) if settings.get("use_stub") is not None else None, False)
     settings["show_intent"] = _str_to_bool(str(settings.get("show_intent")) if settings.get("show_intent") is not None else None, False)
 
     return settings
@@ -84,6 +84,7 @@ def _resolve_settings(args: argparse.Namespace, cfg: Dict[str, Any]) -> Dict[str
 
 def _build_intent_service(settings: Dict[str, Any], scenario_name: str) -> IntentService:
     if settings["use_stub"]:
+        logging.info("Using stub intent service (use_stub=True)")
         return StubIntentService()
     api_base = settings.get("api_base") or ""
     api_key = settings.get("api_key") or ""
@@ -91,6 +92,7 @@ def _build_intent_service(settings: Dict[str, Any], scenario_name: str) -> Inten
     if not (api_base and api_key and model):
         logging.warning("LLM settings incomplete; falling back to stub intent service")
         return StubIntentService()
+    logging.info("Using LLM intent service model=%s api_base=%s", model, api_base)
     desc_all = settings.get("intent_descriptions") or {}
     intent_descriptions = desc_all.get(scenario_name, {})
     return LLMIntentService(
