@@ -46,8 +46,8 @@ def test_default_and_loop():
     bot = Interpreter(scenario, stub)
 
     reply = bot.process_input("???")
-    assert "抱歉" in reply  # default in start
-    assert bot.current_state == "start"
+    assert "哪一项" in reply  # default in start
+    assert bot.current_state == "routing"
     assert bot.ended is False
 
 

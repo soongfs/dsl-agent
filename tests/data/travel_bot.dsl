@@ -3,7 +3,9 @@ scenario travel_bot {
 
     state start {
         intent greeting -> "您好，我能为您做什么？" -> goto routing;
-        default -> "抱歉没有听清，请问需要什么帮助？" -> goto start;
+        intent ask_order -> "好的，请提供您的订单号。" -> goto order;
+        intent ask_flight -> "我可以帮您处理机票，请问目的地是哪里？" -> goto flight;
+        default -> "我可以帮您查订单或预订机票，请问需要哪一项？" -> goto routing;
     }
 
     state routing {

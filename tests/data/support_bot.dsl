@@ -3,6 +3,9 @@ scenario support_bot {
 
     state start {
         intent greeting -> "您好，这里是技术支持，请描述您的问题或产品名称。" -> goto triage;
+        intent connectivity -> "请确认网络已连接，重启路由器后再试。问题是否解决？" -> goto confirm;
+        intent performance -> "请关闭后台程序并重启设备。问题是否解决？" -> goto confirm;
+        intent account -> "请检查账号是否登录或密码是否过期。问题是否解决？" -> goto confirm;
         default -> "请简要说明遇到的问题，我会帮您排查。" -> goto triage;
     }
 

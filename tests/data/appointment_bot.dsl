@@ -3,6 +3,9 @@ scenario appointment_bot {
 
     state start {
         intent greeting -> "您好，这里是预约助手，请问要预约什么服务？" -> goto service;
+        intent doctor -> "好的，为您预约医生，请提供日期。" -> goto date;
+        intent haircut -> "好的，为您预约理发，请提供日期。" -> goto date;
+        intent repair -> "好的，为您预约维修，请提供日期。" -> goto date;
         default -> "请告诉我您要预约的服务类型（如医生、理发、维修）。" -> goto service;
     }
 

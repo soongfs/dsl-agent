@@ -4,6 +4,7 @@ scenario refund_bot {
     state start {
         intent greeting -> "您好，这里是退款助手，请问要退款的订单号是？" -> goto wait_order;
         intent ask_refund -> "好的，请提供需要退款的订单号。" -> goto wait_order;
+        intent provide_order -> "已收到订单号：{user_input}。请问退款原因？" -> goto wait_reason;
         default -> "我可以帮您处理退款，请提供订单号。" -> goto wait_order;
     }
 

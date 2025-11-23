@@ -77,7 +77,7 @@ def test_faq_bot_golden():
         ("配送", "标准配送", "faq", True),
     ]
     mapping = {
-        "start": {"你好": "greeting"},
+        "start": {"你好": "greeting", "配送": "shipping"},
         "faq": {"配送": "shipping"},
     }
     run_golden("faq_bot.dsl", steps, mapping)
