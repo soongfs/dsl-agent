@@ -49,6 +49,7 @@ def _resolve_settings(args: argparse.Namespace, cfg: Dict[str, Any]) -> Dict[str
         "use_stub": cfg.get("use_stub"),
         "show_intent": cfg.get("show_intent"),
         "intent_descriptions": cfg.get("intent_descriptions", {}),
+        "log_file": cfg.get("log_file"),
     }
 
     if args.api_base:
@@ -61,6 +62,8 @@ def _resolve_settings(args: argparse.Namespace, cfg: Dict[str, Any]) -> Dict[str
         settings["use_stub"] = args.use_stub
     if args.show_intent is not None:
         settings["show_intent"] = args.show_intent
+    if args.log_file:
+        settings["log_file"] = args.log_file
 
     # environment overrides everything
     settings["api_base"] = os.getenv("DSL_API_BASE", settings.get("api_base"))
@@ -108,22 +111,43 @@ def run_cli() -> None:
     parser.add_argument("--api-base", help="LLM API base URL")
     parser.add_argument("--api-key", help="LLM API key")
     parser.add_argument("--model", help="LLM model name")
+    parser.add_argument("--log-file", dest="log_file", help="Write logs to file (console will show warnings only)")
     parser.set_defaults(use_stub=None, show_intent=None)
     args = parser.parse_args()
 
     config_data = _load_config(args.config)
     settings = _resolve_settings(args, config_data)
 
+    dsl_scenario = dsl_parser.parse_script(args.script)
+
+    # 默认日志目录：项目当前工作目录下 logs/<scenario>.log
+    if not settings.get("log_file"):
+        default_log_dir = pathlib.Path.cwd() / "logs"
+        default_log_dir.mkdir(parents=True, exist_ok=True)
+        settings["log_file"] = str(default_log_dir / f"{dsl_scenario.name}.log")
+    else:
+        log_path = pathlib.Path(settings["log_file"])
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+
+    log_handlers = []
+    log_handlers.append(logging.FileHandler(settings["log_file"], encoding="utf-8"))
+    console_handler = logging.StreamHandler()
+    # 控制台仅显示警告以上，避免干扰对话输出
+    console_handler.setLevel(logging.WARNING)
+    log_handlers.append(console_handler)
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+        handlers=log_handlers,
     )
 
-    dsl_scenario = dsl_parser.parse_script(args.script)
     intent_service = _build_intent_service(settings, scenario_name=dsl_scenario.name)
     bot = interpreter.Interpreter(dsl_scenario, intent_service)
 
-    print(f"[{dsl_scenario.name}] ready. Type 'exit' to quit.")
+    if settings.get("log_file"):
+        print(f"[{dsl_scenario.name}] ready. Logs -> {settings['log_file']}. Type 'exit' to quit.")
+    else:
+        print(f"[{dsl_scenario.name}] ready. Type 'exit' to quit.")
     while True:
         try:
             user_text = input("> ")

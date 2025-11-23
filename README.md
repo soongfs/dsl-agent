@@ -28,6 +28,7 @@ python3 main.py tests/data/demo_bot.dsl --use-stub
 - 若需为特定场景提供意图描述，使用小节 `[intent_descriptions.<scenario_name>]`，如 `demo_bot` 场景下定义 `provide_order = "订单号，通常数字或数字-数字"`，提示会传给模型以提升分类准确度。
 - 运行时关闭桩：`python3 main.py your.dsl --no-stub --config config.example.ini`
 - 识别失败或参数缺失时会回退桩服务并在日志中提示。
+- 日志输出：默认写入 `logs/<场景名>.log`，控制台仅显示警告级别；可用 `--log-file bot.log` 自定义路径。
 
 ## 测试
 
