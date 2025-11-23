@@ -21,18 +21,30 @@ class _DummyChat:
         self.completions = _DummyCompletions(content)
 
 
+class _DummyClient:
+    def __init__(self, content: str):
+        self.chat = _DummyChat(content)
+
+
 def test_llm_intent_service_accepts_listed_intent(monkeypatch):
-    svc = LLMIntentService(api_base="http://example", api_key="k", model="m")
-    # 替换 client.chat 以避免真实网络调用
-    svc.client.chat = _DummyChat("ask_order")
+    client = _DummyClient("ask_order")
+    svc = LLMIntentService(api_base="http://example", api_key="k", model="m", client=client)
 
     result = asyncio.run(svc.identify("我要查订单", "routing", ["ask_order", "ask_flight"]))
     assert result == "ask_order"
 
 
+def test_llm_intent_service_tokenizes_and_strips(monkeypatch):
+    client = _DummyClient("ask_order!!! extra text")
+    svc = LLMIntentService(api_base="http://example", api_key="k", model="m", client=client)
+
+    result = asyncio.run(svc.identify("hi", "routing", ["ask_order", "ask_flight"]))
+    assert result == "ask_order"
+
+
 def test_llm_intent_service_unknown_returns_none(monkeypatch):
-    svc = LLMIntentService(api_base="http://example", api_key="k", model="m")
-    svc.client.chat = _DummyChat("unknown_label")
+    client = _DummyClient("none")
+    svc = LLMIntentService(api_base="http://example", api_key="k", model="m", client=client)
 
     result = asyncio.run(svc.identify("hi", "start", ["greeting"]))
     assert result is None

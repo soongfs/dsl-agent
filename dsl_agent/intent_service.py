@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 from typing import Dict, List, Optional, Protocol
 
 from openai import OpenAI
@@ -47,47 +48,98 @@ class StubIntentService:
 class LLMIntentService:
     """
     基于 OpenAI 兼容接口的意图分类实现（适配阿里云百炼/通义千问）。
+    增强提示：只输出一个标签；不确定输出 none；附带可选意图描述。
     """
 
-    def __init__(self, api_base: str, api_key: str, model: str, timeout: float = 15.0) -> None:
+    def __init__(
+        self,
+        api_base: str,
+        api_key: str,
+        model: str,
+        timeout: float = 15.0,
+        max_tokens: int = 8,
+        temperature: float = 0.0,
+        max_retries: int = 1,
+        intent_descriptions: Optional[Dict[str, str]] = None,
+        client: Optional[OpenAI] = None,
+    ) -> None:
         self.api_base = api_base
         self.api_key = api_key
         self.model = model
         self.timeout = timeout
-        self.client = OpenAI(api_key=api_key, base_url=api_base)
+        self.max_tokens = max_tokens
+        self.temperature = temperature
+        self.max_retries = max_retries
+        self.intent_descriptions = intent_descriptions or {}
+        self.client = client or OpenAI(api_key=api_key, base_url=api_base)
 
     async def identify(self, text: str, state: str, intents: List[str]) -> Optional[str]:
-        prompt = self._build_prompt(state, intents, text)
-        try:
-            # OpenAI SDK 目前为同步调用，这里直接在协程中调用；若需避免阻塞可改为 asyncio.to_thread
-            completion = self.client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {"role": "system", "content": "You are an intent classifier. Choose exactly one label from the provided list, or say 'none' if unknown."},
-                    {"role": "user", "content": prompt},
-                ],
-                max_tokens=10,
-                temperature=0,
-                timeout=self.timeout,
-            )
-            content = completion.choices[0].message.content.strip()
-        except Exception as exc:
-            logger.error("LLM intent call failed: %s", exc)
+        sanitized = text.strip()[:200]
+        prompt = self._build_prompt(state, intents, sanitized)
+        content = await asyncio.to_thread(self._call_llm, prompt)
+        if content is None:
             return None
+        return self._normalize_result(content, intents)
 
-        normalized = content.lower().strip()
-        if normalized in intents:
-            return normalized
-        # 有些模型可能返回带说明文字，尝试截取首个词
-        first_token = normalized.split()[0]
-        if first_token in intents:
-            return first_token
+    def _call_llm(self, prompt: str) -> Optional[str]:
+        last_exc: Optional[Exception] = None
+        for attempt in range(self.max_retries):
+            try:
+                completion = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": (
+                                "You are an intent classifier. "
+                                "Pick exactly one label from the allowed list. "
+                                "If unsure, answer 'none'. "
+                                "Do not add punctuation or explanation."
+                            ),
+                        },
+                        {"role": "user", "content": prompt},
+                    ],
+                    max_tokens=self.max_tokens,
+                    temperature=self.temperature,
+                    timeout=self.timeout,
+                )
+                return completion.choices[0].message.content
+            except Exception as exc:  # pragma: no cover - network errors vary
+                last_exc = exc
+                logger.warning("LLM intent call failed (attempt %s): %s", attempt + 1, exc)
+        if last_exc:
+            logger.error("LLM intent call failed after retries: %s", last_exc)
         return None
 
     def _build_prompt(self, state: str, intents: List[str], text: str) -> str:
-        options = ", ".join(intents)
+        # 构造带描述的意图列表
+        parts = []
+        for intent in intents:
+            desc = self.intent_descriptions.get(intent, "")
+            if desc:
+                parts.append(f"{intent}: {desc}")
+            else:
+                parts.append(intent)
+        intent_list = "; ".join(parts)
         return (
-            f"Current state: {state}. Allowed intents: [{options}]. "
-            f"User said: \"{text}\". Reply with exactly one intent label from the list, "
+            f"Current state: {state}. Allowed intents: [{intent_list}]. "
+            f"User said: \"{text}\". Respond with exactly one intent label from the allowed intents, "
             f"or 'none' if you are not sure."
         )
+
+    def _normalize_result(self, content: str, intents: List[str]) -> Optional[str]:
+        if content is None:
+            return None
+        normalized = content.strip().lower()
+        if normalized == "none":
+            return None
+        if normalized in intents:
+            return normalized
+        # 只取第一个由字母数字下划线组成的 token
+        tokens = re.findall(r"[a-z0-9_]+", normalized)
+        if not tokens:
+            return None
+        first = tokens[0]
+        if first in intents:
+            return first
+        return None
