@@ -6,7 +6,7 @@
 
 ```bash
 # 安装开发依赖（pytest 可选）
-pip install -e .[dev]
+uv sync --extra dev
 
 # 运行示例脚本（默认尝试 LLM，缺配置则回退桩）
 python3 main.py tests/data/travel_bot.dsl --config config.example.ini
