@@ -1,0 +1,15 @@
+{
+  "scenario": "refund_bot.dsl",
+  "mapping": {
+    "start": {"你好": "greeting"},
+    "wait_order": {"2024-001": "provide_order"},
+    "wait_reason": {"质量问题": "provide_reason"},
+    "confirm": {"确认": "confirm"}
+  },
+  "steps": [
+    {"user": "你好", "expect_reply": "退款助手", "expect_state": "wait_order", "expect_end": false},
+    {"user": "2024-001", "expect_reply": "已收到订单号", "expect_state": "wait_reason", "expect_end": false},
+    {"user": "质量问题", "expect_reply": "已记录原因", "expect_state": "confirm", "expect_end": false},
+    {"user": "确认", "expect_reply": "退款申请已提交", "expect_state": "confirm", "expect_end": true}
+  ]
+}

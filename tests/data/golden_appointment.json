@@ -1,0 +1,15 @@
+{
+  "scenario": "appointment_bot.dsl",
+  "mapping": {
+    "start": {"你好": "greeting"},
+    "service": {"医生": "doctor"},
+    "date": {"2024-12-01": "provide_date"},
+    "confirm": {"确认": "confirm"}
+  },
+  "steps": [
+    {"user": "你好", "expect_reply": "预约助手", "expect_state": "service", "expect_end": false},
+    {"user": "医生", "expect_reply": "预约医生", "expect_state": "date", "expect_end": false},
+    {"user": "2024-12-01", "expect_reply": "收到日期", "expect_state": "confirm", "expect_end": false},
+    {"user": "确认", "expect_reply": "已提交预约", "expect_state": "confirm", "expect_end": true}
+  ]
+}

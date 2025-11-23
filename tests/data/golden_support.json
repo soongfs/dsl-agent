@@ -1,0 +1,13 @@
+{
+  "scenario": "support_bot.dsl",
+  "mapping": {
+    "start": {"你好": "greeting"},
+    "triage": {"网络": "connectivity"},
+    "confirm": {"未解决": "reject"}
+  },
+  "steps": [
+    {"user": "你好", "expect_reply": "技术支持", "expect_state": "triage", "expect_end": false},
+    {"user": "网络", "expect_reply": "网络已连接", "expect_state": "confirm", "expect_end": false},
+    {"user": "未解决", "expect_reply": "升级到人工", "expect_state": "confirm", "expect_end": true}
+  ]
+}

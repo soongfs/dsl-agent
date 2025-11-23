@@ -1,0 +1,13 @@
+{
+  "scenario": "travel_bot.dsl",
+  "mapping": {
+    "start": {"hi": "greeting"},
+    "routing": {"order": "ask_order"},
+    "order": {"2024-001": "provide_order"}
+  },
+  "steps": [
+    {"user": "hi", "expect_reply": "您好", "expect_state": "routing", "expect_end": false},
+    {"user": "order", "expect_reply": "订单号", "expect_state": "order", "expect_end": false},
+    {"user": "2024-001", "expect_reply": "2024-001", "expect_state": "order", "expect_end": true}
+  ]
+}

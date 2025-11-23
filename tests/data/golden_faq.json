@@ -1,0 +1,11 @@
+{
+  "scenario": "faq_bot.dsl",
+  "mapping": {
+    "start": {"你好": "greeting", "配送": "shipping"},
+    "faq": {"配送": "shipping"}
+  },
+  "steps": [
+    {"user": "你好", "expect_reply": "常见问题助手", "expect_state": "faq", "expect_end": false},
+    {"user": "配送", "expect_reply": "标准配送", "expect_state": "faq", "expect_end": true}
+  ]
+}
