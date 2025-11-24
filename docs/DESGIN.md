@@ -50,11 +50,31 @@ graph TD
           -_parse_next_action() str?
           -_validate_gotos(states)
       }
-      class Token {+type; +value; +line; +column;}
-      class ParseError
-      class Scenario
-      class State
-      class Transition
+      class Token {
+          +type: str
+          +value: str
+          +line: int
+          +column: int
+      }
+      class ParseError {
+          +message: str
+          +line: int?
+          +column: int?
+      }
+      class Scenario {
+          +name: str
+          +states: dict~str, State~
+          +initial_state: str
+      }
+      class State {
+          +name: str
+          +intents: dict~str, Transition~
+          +default: Transition
+      }
+      class Transition {
+          +response: str
+          +next_state: str?
+      }
       Lexer --> Token
       Parser --> Token
       Parser --> Scenario
@@ -82,12 +102,12 @@ graph TD
   classDiagram
       class IntentService {
           <<protocol>>
-          +identify(text, state, intents) Optional~str~
+          +identify(text, state, intents) str?
       }
       class StubIntentService {
-          -mapping: dict
+          -mapping: dict~str, dict~str, str~~
           -default_intent: str?
-          +identify(...)
+          +identify(text, state, intents) str?
       }
       class LLMIntentService {
           -api_base: str
@@ -95,9 +115,9 @@ graph TD
           -model: str
           -intent_descriptions: dict
           -client: OpenAI
-          +identify(...)
-          -_build_prompt(...)
-          -_normalize_result(...)
+          +identify(text, state, intents) str?
+          -_build_prompt(state, intents, text) str
+          -_normalize_result(content, intents) str?
       }
       class OpenAI
       IntentService <|.. StubIntentService
@@ -130,6 +150,24 @@ graph TD
           +current_state: str
           +ended: bool
           -_resolve_intent(text, state, intents) str?
+      }
+      class Scenario {
+          +name: str
+          +states: dict~str, State~
+          +initial_state: str
+      }
+      class State {
+          +name: str
+          +intents: dict~str, Transition~
+          +default: Transition
+      }
+      class Transition {
+          +response: str
+          +next_state: str?
+      }
+      class IntentService {
+          <<protocol>>
+          +identify(text, state, intents) str?
       }
       Interpreter --> Scenario
       Interpreter --> IntentService
