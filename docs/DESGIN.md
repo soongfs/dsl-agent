@@ -193,7 +193,7 @@ graph TD
 ### 2.8 数据文件说明
 
 - **DSL 脚本**：位于 `tests/data/*.dsl`，遵循 `DSL_SPEC.md`。示例 `travel_bot.dsl` 展示多状态、多意图与 `{user_input}` 占位符，用作演示与测试输入。
-- **黄金转录 JSON**：`tests/data/golden_*.json`，格式：
+- **黄金用例 JSON**：`tests/data/golden_*.json`，格式：
 
   ```json
   {
